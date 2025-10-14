@@ -1,0 +1,1167 @@
+openapi: 3.0.3
+info:
+  title: TechDigits Store API
+  description: |
+    REST API for an e-commerce store supporting authentication, users, products, categories, orders, reviews, and payments with OTP verification.
+
+    Security: Most endpoints require Bearer JWT. Admin-only endpoints are noted in descriptions.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@techdigits.example
+    url: https://techdigits.example/support
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+  - url: /
+    description: Relative server (useful behind proxies)
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Products
+  - name: Categories
+  - name: Orders
+  - name: Reviews
+  - name: Payments
+  - name: Admin
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, admin]
+        phone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserPublic:
+      allOf:
+        - $ref: '#/components/schemas/User'
+      properties:
+        password:
+          type: string
+          writeOnly: true
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [name]
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Category'
+        images:
+          type: array
+          items:
+            type: string
+        stock:
+          type: integer
+        rating:
+          type: number
+        numReviews:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [name, price]
+
+    OrderItem:
+      type: object
+      properties:
+        product:
+          type: string
+          description: Product ObjectId
+        qty:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+      required: [product, qty, price]
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/User'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, paid, shipped, completed, cancelled]
+        otpCode:
+          type: string
+          nullable: true
+        otpExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        otpVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [user, items, totalAmount]
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        user:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/User'
+        product:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Product'
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [user, product, rating]
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        order:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Order'
+        user:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/User'
+        method:
+          type: string
+          enum: [visa, vodafone]
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, succeeded, failed]
+        details:
+          type: object
+          properties:
+            last4:
+              type: string
+            expiry:
+              type: string
+            vodafoneNumber:
+              type: string
+            reference:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Resource identifier (MongoDB ObjectId)
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                username: { type: string }
+                email: { type: string, format: email }
+                password: { type: string }
+                phoneNumber: { type: string }
+                address: { type: string }
+              required: [firstName,lastName,username,email,password,phoneNumber,address]
+            example:
+              firstName: Jane
+              lastName: Doe
+              username: janed
+              email: jane@example.com
+              password: Secret123!
+              phoneNumber: '01023456789'
+              address: 123 Main St
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  userId: { type: string }
+              example:
+                success: true
+                message: Registration successful
+                userId: 65fb7a1e2b6c4b0012c3d4e5
+        '400': { description: Bad request, missing fields, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '409': { description: Email or username exists, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { description: Server error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate user and obtain JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+              required: [email, password]
+            example:
+              email: jane@example.com
+              password: Secret123!
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      email: { type: string }
+                      role: { type: string }
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                user:
+                  id: 65fb7a1e2b6c4b0012c3d4e5
+                  name: Jane Doe
+                  email: jane@example.com
+                  role: user
+        '401': { description: Invalid credentials, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { description: Server error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user (requires JWT)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '401': { description: Unauthorized }
+
+  /api/auth/password/request-otp:
+    post:
+      tags: [Auth]
+      summary: Request password reset OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+              required: [email]
+            example:
+              email: jane@example.com
+      responses:
+        '200': { description: If account exists, OTP sent }
+        '429': { description: Too many requests, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { description: Server error }
+
+  /api/auth/password/verify-otp:
+    post:
+      tags: [Auth]
+      summary: Verify password reset OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                code: { type: string }
+              required: [email, code]
+            example:
+              email: jane@example.com
+              code: '123456'
+      responses:
+        '200':
+          description: OTP verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  resetToken: { type: string }
+        '400': { description: Invalid or expired code }
+        '403': { description: Forbidden when trying to verify for another user }
+        '500': { description: Server error }
+
+  /api/auth/password/reset-otp:
+    post:
+      tags: [Auth]
+      summary: Reset password using verified OTP session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resetToken: { type: string }
+                password: { type: string }
+              required: [resetToken, password]
+      responses:
+        '200': { description: Password updated }
+        '400': { description: Invalid or expired session }
+        '500': { description: Server error }
+
+  /api/users/me:
+    get:
+      tags: [Users]
+      summary: Get own profile
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: User profile, content: { application/json: { schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } } } } }
+        '401': { description: Unauthorized }
+    put:
+      tags: [Users]
+      summary: Update own profile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              properties:
+                name: { type: string }
+                email: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
+                username: { type: string }
+                phoneNumber: { type: string }
+                address: { type: string }
+      responses:
+        '200': { description: Updated user, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '401': { description: Unauthorized }
+        '409': { description: Conflict (duplicate email/username), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List all users (admin)
+      description: Admin only
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden (admin required) }
+
+  /api/users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by id (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: User, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+    put:
+      tags: [Users]
+      summary: Update user by id (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200': { description: Updated user, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '409': { description: Conflict }
+    delete:
+      tags: [Users]
+      summary: Delete user (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Deleted, content: { application/json: { schema: { type: object, properties: { message: { type: string } } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+
+  /api/users/{id}/role:
+    put:
+      tags: [Users]
+      summary: Update user role (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [user, admin]
+              required: [role]
+      responses:
+        '200': { description: Updated user, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { description: Invalid role }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+    patch:
+      tags: [Users]
+      summary: Update user role (admin, partial)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [user, admin]
+              required: [role]
+      responses:
+        '200': { description: Updated user }
+        '400': { description: Invalid role }
+
+  /api/products:
+    get:
+      tags: [Products]
+      summary: List products
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+          description: Category id, slug, or exact name
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Product' }
+    post:
+      tags: [Products]
+      summary: Create product (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Product' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product by id
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Product, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        '404': { description: Not found }
+    put:
+      tags: [Products]
+      summary: Update product (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Product' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+    delete:
+      tags: [Products]
+      summary: Delete product (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Deleted, content: { application/json: { schema: { type: object, properties: { message: { type: string } } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/products/{id}/review-permission:
+    get:
+      tags: [Products]
+      summary: Check if current user can review this product
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200':
+          description: Permission state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canReview: { type: boolean }
+              example:
+                canReview: true
+        '401': { description: Unauthorized }
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Categories]
+      summary: Create category (admin)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Category' }
+      responses:
+        '201': { description: Created }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/categories/{id}:
+    get:
+      tags: [Categories]
+      summary: Get category by id
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Category, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
+        '404': { description: Not found }
+    put:
+      tags: [Categories]
+      summary: Update category (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Category' }
+      responses:
+        '200': { description: Updated }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+    delete:
+      tags: [Categories]
+      summary: Delete category (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Deleted }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/orders:
+    get:
+      tags: [Orders]
+      summary: List all orders (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: List of orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+    post:
+      tags: [Orders]
+      summary: Create order for current user
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product: { type: string }
+                      productId: { type: string }
+                      id: { type: string }
+                      qty: { type: integer, minimum: 1 }
+                  minItems: 1
+              required: [items]
+            example:
+              items:
+                - product: 65fc11112222333344445555
+                  qty: 2
+      responses:
+        '201': { description: Created order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '400': { description: Invalid items }
+        '401': { description: Unauthorized }
+
+    delete:
+      tags: [Orders]
+      summary: Delete all orders (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted count, content: { application/json: { schema: { type: object, properties: { success: { type: boolean }, deleted: { type: integer } } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/orders/mine:
+    get:
+      tags: [Orders]
+      summary: List current user's orders
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: List of orders, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Order' } } } } }
+        '401': { description: Unauthorized }
+
+  /api/orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order by id
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '401': { description: Unauthorized }
+        '404': { description: Not found }
+    delete:
+      tags: [Orders]
+      summary: Delete order (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Deleted, content: { application/json: { schema: { type: object, properties: { success: { type: boolean }, message: { type: string } } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+
+  /api/orders/{id}/status:
+    put:
+      tags: [Orders]
+      summary: Update order status (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, paid, shipped, completed, cancelled]
+              required: [status]
+      responses:
+        '200': { description: Updated order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+
+  /api/reviews:
+    get:
+      tags: [Reviews]
+      summary: List all reviews (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: List of reviews, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Review' } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+    post:
+      tags: [Reviews]
+      summary: Add review for a product (requires purchased and paid order)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId: { type: string }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
+              required: [productId, rating]
+      responses:
+        '201': { description: Created review, content: { application/json: { schema: { $ref: '#/components/schemas/Review' } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden (not purchased/paid) }
+
+  /api/reviews/{id}:
+    delete:
+      tags: [Reviews]
+      summary: Delete review (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PathId'
+      responses:
+        '200': { description: Deleted, content: { application/json: { schema: { type: object, properties: { message: { type: string } } } } } }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+
+  /api/reviews/{productId}:
+    get:
+      tags: [Reviews]
+      summary: List reviews for a product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: List of reviews, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Review' } } } } }
+
+  /api/payments/create-intent:
+    post:
+      tags: [Payments]
+      summary: Create payment intent (mock)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Client secret returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      clientSecret: { type: string }
+              example:
+                success: true
+                message: ok
+                data:
+                  clientSecret: pi_mock_client_secret
+
+  /api/payments/initiate:
+    post:
+      tags: [Payments]
+      summary: Initiate a payment for an order (generates OTP for Vodafone or prepares Visa)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId: { type: string }
+                method: { type: string, enum: [visa, vodafone] }
+                phone: { type: string, description: Required for Vodafone if not on user profile }
+              required: [orderId, method]
+      responses:
+        '200': { description: Initiated/OTP sent or Visa can proceed }
+        '400': { description: Invalid or already processed order }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Order not found }
+
+  /api/payments/send-otp:
+    post:
+      tags: [Payments]
+      summary: Send OTP for payment verification
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId: { type: string }
+                method: { type: string, enum: [visa, vodafone] }
+                phone: { type: string }
+              required: [orderId]
+      responses:
+        '200': { description: OTP sent }
+        '400': { description: Validation error }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Order not found }
+
+  /api/payments/verify-otp:
+    post:
+      tags: [Payments]
+      summary: Verify OTP and confirm payment
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId: { type: string }
+                method: { type: string, enum: [visa, vodafone], default: vodafone }
+                otp: { type: string }
+                otpCode: { type: string }
+                cardNumber: { type: string, description: Required when method=visa }
+                expiryMonth: { type: integer, minimum: 1, maximum: 12 }
+                expiryYear: { type: integer, description: 2-digit year }
+                cvv: { type: string }
+                vodafoneNumber: { type: string, description: Required when method=vodafone }
+              required: [orderId]
+      responses:
+        '200': { description: Payment confirmed }
+        '400': { description: Invalid or expired OTP / validation error }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Order not found }
+
+  /api/payments/resend-otp:
+    post:
+      tags: [Payments]
+      summary: Resend OTP (limited)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId: { type: string }
+                phone: { type: string }
+              required: [orderId, phone]
+      responses:
+        '200': { description: OTP resent }
+        '400': { description: Validation error }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Order not found }
+        '429': { description: Too many requests }
+
+  /api/payments/process:
+    post:
+      tags: [Payments]
+      summary: Process payment after OTP verification
+      description: Requires a previously verified OTP record.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId: { type: string }
+                method: { type: string, enum: [visa, vodafone] }
+                cardNumber: { type: string }
+                expiryMonth: { type: integer }
+                expiryYear: { type: integer }
+                cvv: { type: string }
+                vodafoneNumber: { type: string }
+              required: [orderId, method]
+      responses:
+        '201':
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        type: object
+                        properties:
+                          id: { type: string }
+                          method: { type: string }
+                          status: { type: string }
+                          amount: { type: number }
+                          createdAt: { type: string, format: date-time }
+                      order:
+                        type: object
+                        properties:
+                          id: { type: string }
+                          status: { type: string }
+                          totalAmount: { type: number }
+        '400': { description: Validation error or OTP not verified }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Order not found }
+
+  /api/payments/visa:
+    post:
+      tags: [Payments]
+      summary: Direct Visa payment (without separate OTP endpoint)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId: { type: string }
+                cardNumber: { type: string }
+                expiryMonth: { type: integer }
+                expiryYear: { type: integer }
+                cvv: { type: string }
+              required: [orderId, cardNumber, expiryMonth, expiryYear, cvv]
+      responses:
+        '201': { description: Visa payment completed }
+        '400': { description: Validation error }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Order not found }
+
+  /api/payments:
+    get:
+      tags: [Payments]
+      summary: List recent transactions (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Transactions list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        method: { type: string }
+                        status: { type: string }
+                        amount: { type: number }
+                        createdAt: { type: string, format: date-time }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/admin/payments:
+    get:
+      tags: [Admin]
+      summary: Payments summary by user (admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Summary by user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId: { type: string }
+                        name: { type: string }
+                        email: { type: string }
+                        username: { type: string }
+                        totalOrders: { type: integer }
+                        totalPaid: { type: number }
+                        paidOrders: { type: integer }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+
+  /api/admin/payments/{userId}:
+    get:
+      tags: [Admin]
+      summary: Paid orders for a specific user (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Paid orders summary for user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productNames: { type: string }
+                        amount: { type: number }
+                        status: { type: string }
+                        createdAt: { type: string, format: date-time }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+security: []

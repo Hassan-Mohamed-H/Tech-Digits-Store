@@ -836,7 +836,7 @@ if (adminApp) {
     };
 
     function showOrderStatusModal(orderId, { rowEl = null, test = false } = {}) {
-      const statuses = ['Pending','Processing','Paid','Cancelled'];
+      const statuses = ['pending','Processing','paid','Cancelled'];
       const fields = [{ name: 'status', label: 'Status', type: 'select', required: true, options: statuses }];
       const dlg = ui.formDialog({
         title: 'Update Order Status',
