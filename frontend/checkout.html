@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechDigits Store | Checkout</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container hdr">
+      <a href="index.html" id="site-logo">TechDigits Store</a>
+      <div class="spacer"></div>
+      <nav id="header-user"></nav>
+    </div>
+  </header>
+  <main class="container">
+    <h2 class="section-title">Checkout</h2>
+    <section>
+      <h3 class="section-title">Order Summary</h3>
+      <ul id="orderSummary" class="grid" style="grid-template-columns:1fr;gap:10px"></ul>
+    </section>
+    <section>
+      <h3 class="section-title">Payment Method</h3>
+      <form id="checkoutForm">
+        <div class="pay-methods">
+          <label><input type="radio" name="payMethod" value="cod" checked /> Cash on Delivery</label>
+          <label><input type="radio" name="payMethod" value="visa" /> Visa / Card</label>
+          <label><input type="radio" name="payMethod" value="vodafone" /> Vodafone Cash</label>
+        </div>
+        <button type="submit" class="btn">Confirm Order</button>
+      </form>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="brand">TechDigits Store</div>
+      <div class="links">
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+        <a href="profile.html">My Account</a>
+      </div>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechDigits Admin | Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container hdr">
+      <a href="index.html" id="site-logo">TechDigits Store</a>
+      <div class="spacer"></div>
+      <nav id="header-user"></nav>
+    </div>
+  </header>
+
+  <main class="container" id="adminApp">
+    <div class="admin-layout">
+      <aside class="admin-sidebar card" id="adminSidebar">
+        <h3 class="muted" style="margin-top:0">Menu</h3>
+        <nav>
+          <a href="#" data-section="dashboard" class="active">Dashboard</a>
+          <a href="#" data-section="users">Users Management</a>
+          <a href="#" data-section="products">Products Management</a>
+          <a href="#" data-section="categories">Categories Management</a>
+          <a href="#" data-section="orders">Orders Management</a>
+          <a href="#" data-section="reviews">User Reviews</a>
+          <a href="#" data-section="payments">Payments Management</a>
+        </nav>
+      </aside>
+      <section class="admin-content" id="adminContent">
+        <div class="card">
+          <h2 class="section-title">Dashboard</h2>
+          <p class="muted">Select a section from the sidebar to manage.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="brand">TechDigits Store</div>
+      <div class="links">
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+        <a href="profile.html">My Account</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Your Vodafone Cash Payment</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Page-specific refinements */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .otp-card {
+      width: min(520px, 92vw);
+      background: var(--card-bg, #fff);
+      color: var(--fg, #111);
+      border-radius: 14px;
+      padding: 22px 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .08), 0 2px 10px rgba(0, 0, 0, .05);
+      transform: translateY(6px);
+      opacity: 0;
+      animation: cardIn .26s ease-out forwards;
+    }
+
+    @keyframes cardIn {
+      to {
+        transform: none;
+        opacity: 1;
+      }
+    }
+
+    .otp-title {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .otp-sub {
+      margin: 0 0 14px;
+      color: #666;
+    }
+
+    .otp-inputs {
+      display: grid;
+      grid-auto-flow: column;
+      gap: 10px;
+      justify-content: center;
+      margin: 14px 0;
+    }
+
+    .otp-inputs input {
+      width: 48px;
+      height: 56px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      background: var(--input-bg, #fff);
+      color: inherit;
+    }
+
+    .otp-inputs input:focus {
+      border-color: #7a5cff;
+      box-shadow: 0 0 0 3px rgba(122, 92, 255, .15);
+    }
+
+    .otp-timer {
+      text-align: center;
+      margin: 10px 0;
+      font-variant-numeric: tabular-nums;
+      color: #444;
+    }
+
+    .otp-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .otp-resend {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .otp-error {
+      color: #b00020;
+      font-size: .95rem;
+    }
+
+    .cancel-wrap {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .btn.full {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container hdr">
+      <a href="index.html" id="site-logo">TechDigits Store</a>
+      <div class="spacer"></div>
+      <nav id="header-user"></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="otpPage" class="otp-card" aria-live="polite">
+      <h1 class="otp-title">Verify Your Vodafone Cash Payment</h1>
+      <p class="otp-sub">Enter the 6-digit code sent to your phone.</p>
+      <div class="otp-inputs" role="group" aria-label="OTP inputs">
+        <input inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp" aria-label="Digit 1">
+        <input inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp" aria-label="Digit 2">
+        <input inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp" aria-label="Digit 3">
+        <input inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp" aria-label="Digit 4">
+        <input inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp" aria-label="Digit 5">
+        <input inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp" aria-label="Digit 6">
+      </div>
+      <div class="otp-timer"><span id="otpTimer">Code expires in 05:00</span></div>
+      <div class="otp-actions">
+        <button id="confirmOtpBtn" class="btn" disabled>Confirm OTP</button>
+        <button id="resendOtpBtn" class="btn ghost" disabled>Resend OTP</button>
+      </div>
+      <div class="otp-resend">
+        <div id="otpError" class="otp-error" role="alert"></div>
+        <div class="muted" id="otpHint"></div>
+      </div>
+      <div class="cancel-wrap">
+        <a id="cancelPayment" class="btn ghost full" href="#">Cancel Payment</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="brand">TechDigits Store</div>
+      <div class="links">
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+        <a href="profile.html">My Account</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechDigits Store | Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container hdr">
+      <a href="index.html" id="site-logo">TechDigits Store</a>
+      <div class="spacer"></div>
+      <nav id="header-user"></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Login</h2>
+      <form id="loginForm" class="form">
+        <label>Email
+          <input type="email" name="email" required />
+        </label>
+        <label>Password
+          <input type="password" name="password" required />
+        </label>
+        <button class="btn" type="submit">Login</button>
+      </form>
+      <div class="muted" style="margin-top:8px">
+        Don't have an account? <a id="toRegister" href="register.html">Register now</a>
+        · <a href="forgot-password.html">Forgot password</a>
+      </div>
+    </section>
+  </main>
+  <script>
+    // keep redirect param when linking to register
+    (function(){
+      const a=document.getElementById('toRegister');
+      const p=new URLSearchParams(location.search).get('redirect');
+      if(a&&p) a.href = `register.html?redirect=${encodeURIComponent(p)}`;
+    })();
+  </script>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="brand">TechDigits Store</div>
+      <div class="links">
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+        <a href="profile.html">My Account</a>
+      </div>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

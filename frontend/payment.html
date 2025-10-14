@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechDigits Store | Payment</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container hdr">
+      <a href="index.html" id="site-logo">TechDigits Store</a>
+      <div class="spacer"></div>
+      <nav id="header-user"></nav>
+    </div>
+  </header>
+  <main class="container">
+  <h2 class="section-title">Payment</h2>
+    <section class="card">
+      <div id="paymentMeta" class="muted" style="margin-bottom:10px"></div>
+      <form id="paymentForm" class="form grid cols-1" action="#">
+        <div id="visaFields" class="hidden">
+          <label>Card Number
+            <input type="text" inputmode="numeric" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="23" required />
+          </label>
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
+            <label>Expiry Month
+              <input type="number" name="expiryMonth" placeholder="MM" min="1" max="12" required />
+            </label>
+            <label>Expiry Year
+              <input type="number" name="expiryYear" placeholder="YY" min="24" max="99" required />
+            </label>
+          </div>
+          <label>CVV
+            <input type="password" inputmode="numeric" name="cvv" placeholder="123" minlength="3" maxlength="3" pattern="\\d{3}" required />
+          </label>
+        </div>
+        <div id="vodafoneFields" class="hidden">
+          <label>Vodafone Cash Number
+            <input type="tel" name="vodafoneNumber" placeholder="01XXXXXXXXX" minlength="11" maxlength="11" required />
+          </label>
+        </div>
+        <button type="submit" class="btn" id="complete-payment-btn">Complete Payment</button>
+      </form>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="brand">TechDigits Store</div>
+      <div class="links">
+        <a href="products.html">Products</a>
+        <a href="cart.html">Cart</a>
+        <a href="profile.html">My Account</a>
+      </div>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html>

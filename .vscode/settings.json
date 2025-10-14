@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/b94c2f82-04ee-435c-9c78-ab03f65635bd/resourceGroups/appsvc_linux_westeurope/providers/Microsoft.Web/sites/Tech-Digits-Store-backend",
+    "appService.deploySubpath": "backend"
+}

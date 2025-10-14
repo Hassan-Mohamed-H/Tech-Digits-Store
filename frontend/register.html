@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechDigits Store | Create Account</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container hdr">
+      <a href="index.html" id="site-logo">TechDigits Store</a>
+      <div class="spacer"></div>
+      <nav id="header-user"></nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="card">
+  <h2>Create Account</h2>
+      <form id="registerForm" class="form grid cols-2" novalidate style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start;">
+        <!-- 1. First Name -->
+  <label for="firstName" style="grid-row:1;grid-column:1;">First Name
+          <input id="firstName" type="text" name="firstName" autocomplete="given-name" required />
+        </label>
+        <!-- 2. Last Name -->
+  <label for="lastName" style="grid-row:1;grid-column:2;">Last Name
+          <input id="lastName" type="text" name="lastName" autocomplete="family-name" required />
+        </label>
+        <!-- 3. Username -->
+  <label for="username" style="grid-row:1;grid-column:3;">Username
+          <input id="username" type="text" name="username" autocomplete="username" required />
+        </label>
+        <!-- 4. Email -->
+  <label for="email" style="grid-row:1;grid-column:4;">Email
+          <input id="email" type="email" name="email" autocomplete="email" required />
+        </label>
+        <!-- Middle row (centered): password, address, phoneNumber -->
+        <div style="grid-row:2;grid-column:1 / -1; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <!-- 5. Password -->
+          <label for="password" style="flex:0 1 260px; max-width:100%;">Password
+            <input id="password" type="password" name="password" autocomplete="new-password" required />
+          </label>
+          <!-- 7. Address -->
+          <label for="address" style="flex:0 1 260px; max-width:100%;">Address
+            <input id="address" type="text" name="address" autocomplete="street-address" required />
+          </label>
+          <!-- 6. Phone Number -->
+          <label for="phoneNumber" style="flex:0 1 260px; max-width:100%;">Phone Number
+            <input id="phoneNumber" type="tel" name="phoneNumber" placeholder="01XXXXXXXXX" autocomplete="tel" required />
+          </label>
+        </div>
+        <!-- Submit Button centered below last input -->
+        <div class="col-span-2" style="grid-row:3;grid-column:1 / -1;margin-top:12px;display:flex;justify-content:center;">
+          <button class="btn" type="submit">Register</button>
+        </div>
+      </form>
+      <div class="muted" style="margin-top:8px">
+  Already have an account? <a id="toLogin" href="login.html">Login</a>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <div class="brand">TechDigits Store</div>
+      <div class="links">
+  <a href="products.html">Products</a>
+  <a href="cart.html">Cart</a>
+  <a href="profile.html">My Account</a>
+      </div>
+    </div>
+  </footer>
+  <script>
+    (function(){
+      const a=document.getElementById('toLogin');
+      const p=new URLSearchParams(location.search).get('redirect');
+      if(a&&p) a.href = `login.html?redirect=${encodeURIComponent(p)}`;
+    })();
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>

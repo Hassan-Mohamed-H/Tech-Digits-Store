@@ -1,0 +1,265 @@
+{
+  "info": {
+    "name": "Tech Digits Store",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Organized API collection grouped by controller. Base URL variable: {{baseUrl}} (default http://localhost:5000). Use {{token}} for Bearer auth."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "auth.controller",
+      "item": [
+        {
+          "name": "POST /api/auth/register",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Passw0rd!\"\n}"
+            },
+            "description": "Register a new user."
+          }
+        },
+        {
+          "name": "POST /api/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Passw0rd!\"\n}"
+            },
+            "description": "Login and receive a JWT token."
+          }
+        },
+        {
+          "name": "GET /api/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api","auth","me"] },
+            "description": "Get current authenticated user."
+          }
+        },
+        {
+          "name": "POST /api/auth/password/request-otp",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/auth/password/request-otp", "host": ["{{baseUrl}}"], "path": ["api","auth","password","request-otp"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@example.com\"\n}" },
+            "description": "Request a password reset OTP to email."
+          }
+        },
+        {
+          "name": "POST /api/auth/password/verify-otp",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/auth/password/verify-otp", "host": ["{{baseUrl}}"], "path": ["api","auth","password","verify-otp"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\"\n}" },
+            "description": "Verify password reset OTP."
+          }
+        },
+        {
+          "name": "POST /api/auth/password/reset-otp",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/auth/password/reset-otp", "host": ["{{baseUrl}}"], "path": ["api","auth","password","reset-otp"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\",\n  \"newPassword\": \"NewPassw0rd!\"\n}" },
+            "description": "Reset password using verified OTP."
+          }
+        }
+      ]
+    },
+    {
+      "name": "user.controller",
+      "item": [
+        {
+          "name": "GET /api/users/me",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api","users","me"] },
+            "description": "Get profile of current user."
+          }
+        },
+        {
+          "name": "PUT /api/users/me",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api","users","me"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John D.\",\n  \"phoneNumber\": \"+20123456789\",\n  \"address\": \"Cairo, EG\"\n}" },
+            "description": "Update current user's profile."
+          }
+        },
+        {
+          "name": "GET /api/users",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api","users"] },
+            "description": "List all users (admin)."
+          }
+        },
+        {
+          "name": "GET /api/users/:id",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/:id", "host": ["{{baseUrl}}"], "path": ["api","users",":id"] },
+            "description": "Get a user by ID (admin)."
+          }
+        },
+        {
+          "name": "PUT /api/users/:id/role",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/:id/role", "host": ["{{baseUrl}}"], "path": ["api","users",":id","role"] },
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"admin\"\n}" },
+            "description": "Update user role (admin). Use PATCH as alternative."
+          }
+        },
+        {
+          "name": "PATCH /api/users/:id/role",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/:id/role", "host": ["{{baseUrl}}"], "path": ["api","users",":id","role"] },
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"user\"\n}" },
+            "description": "Update user role (admin)."
+          }
+        },
+        {
+          "name": "PUT /api/users/:id",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/:id", "host": ["{{baseUrl}}"], "path": ["api","users",":id"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john@example.com\",\n  \"phoneNumber\": \"+20123456789\",\n  \"address\": \"Cairo, EG\"\n}" },
+            "description": "Update a user (admin)."
+          }
+        },
+        {
+          "name": "DELETE /api/users/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/users/:id", "host": ["{{baseUrl}}"], "path": ["api","users",":id"] },
+            "description": "Delete a user (admin)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "product.controller",
+      "item": [
+        {
+          "name": "GET /api/products",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/products", "host": ["{{baseUrl}}"], "path": ["api","products"] } }
+        },
+        {
+          "name": "GET /api/products/:id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/products/:id", "host": ["{{baseUrl}}"], "path": ["api","products",":id"] } }
+        },
+        {
+          "name": "GET /api/products/:id/review-permission",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/products/:id/review-permission", "host": ["{{baseUrl}}"], "path": ["api","products",":id","review-permission"] } }
+        },
+        {
+          "name": "POST /api/products",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/products", "host": ["{{baseUrl}}"], "path": ["api","products"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Phone\",\n  \"price\": 199.99,\n  \"description\": \"Nice phone\",\n  \"category\": \"Electronics\",\n  \"images\": [\"https://example.com/image.jpg\"]\n}" }
+          }
+        },
+        {
+          "name": "PUT /api/products/:id",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/products/:id", "host": ["{{baseUrl}}"], "path": ["api","products",":id"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Phone Pro\",\n  \"price\": 299.99,\n  \"description\": \"Better phone\",\n  \"category\": \"Electronics\",\n  \"images\": [\"https://example.com/image2.jpg\"]\n}" }
+          }
+        },
+        {
+          "name": "DELETE /api/products/:id",
+          "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/products/:id", "host": ["{{baseUrl}}"], "path": ["api","products",":id"] } }
+        }
+      ]
+    },
+    {
+      "name": "category.controller",
+      "item": [
+        { "name": "GET /api/categories", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/categories", "host": ["{{baseUrl}}"], "path": ["api","categories"] } } },
+        { "name": "GET /api/categories/:id", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/categories/:id", "host": ["{{baseUrl}}"], "path": ["api","categories",":id"] } } },
+        { "name": "POST /api/categories", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/categories", "host": ["{{baseUrl}}"], "path": ["api","categories"] }, "body": { "mode": "raw", "raw": "{\n  \"name\": \"Phones\"\n}" } } },
+        { "name": "PUT /api/categories/:id", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/categories/:id", "host": ["{{baseUrl}}"], "path": ["api","categories",":id"] }, "body": { "mode": "raw", "raw": "{\n  \"name\": \"Smartphones\"\n}" } } },
+        { "name": "DELETE /api/categories/:id", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/categories/:id", "host": ["{{baseUrl}}"], "path": ["api","categories",":id"] } } }
+      ]
+    },
+    {
+      "name": "order.controller",
+      "item": [
+        {
+          "name": "POST /api/orders",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api","orders"] },
+            "body": { "mode": "raw", "raw": "{\n  \"items\": [{ \"id\": \"PRODUCT_ID\", \"qty\": 1 }],\n  \"paymentMethod\": \"visa\"\n}" },
+            "description": "Create an order (authenticated user)."
+          }
+        },
+        { "name": "GET /api/orders/mine", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/orders/mine", "host": ["{{baseUrl}}"], "path": ["api","orders","mine"] } } },
+        { "name": "GET /api/orders", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api","orders"] }, "description": "List all orders (admin)." } },
+        { "name": "GET /api/orders/:id", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/orders/:id", "host": ["{{baseUrl}}"], "path": ["api","orders",":id"] } } },
+        { "name": "PUT /api/orders/:id/status", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/orders/:id/status", "host": ["{{baseUrl}}"], "path": ["api","orders",":id","status"] }, "body": { "mode": "raw", "raw": "{\n  \"status\": \"paid\"\n}" } } },
+        { "name": "DELETE /api/orders/:id", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/orders/:id", "host": ["{{baseUrl}}"], "path": ["api","orders",":id"] } } },
+        { "name": "DELETE /api/orders", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api","orders"] }, "description": "Delete all orders (admin)." } }
+      ]
+    },
+    {
+      "name": "review.controller",
+      "item": [
+        { "name": "GET /api/reviews", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/reviews", "host": ["{{baseUrl}}"], "path": ["api","reviews"] }, "description": "List all reviews (admin)." } },
+        { "name": "DELETE /api/reviews/:id", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/reviews/:id", "host": ["{{baseUrl}}"], "path": ["api","reviews",":id"] } } },
+        { "name": "POST /api/reviews", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/reviews", "host": ["{{baseUrl}}"], "path": ["api","reviews"] }, "body": { "mode": "raw", "raw": "{\n  \"productId\": \"PRODUCT_ID\",\n  \"rating\": 5,\n  \"comment\": \"Great!\"\n}" } } },
+        { "name": "GET /api/reviews/:productId", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/reviews/:productId", "host": ["{{baseUrl}}"], "path": ["api","reviews",":productId"] }, "description": "List reviews for a product (public)." } }
+      ]
+    },
+    {
+      "name": "payment.controller",
+      "item": [
+        { "name": "POST /api/payments/create-intent", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/create-intent", "host": ["{{baseUrl}}"], "path": ["api","payments","create-intent"] }, "body": { "mode": "raw", "raw": "{\n  \"amount\": 100,\n  \"currency\": \"EGP\"\n}" } } },
+        { "name": "POST /api/payments/process", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/process", "host": ["{{baseUrl}}"], "path": ["api","payments","process"] }, "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"ORDER_ID\",\n  \"method\": \"visa\"\n}" } } },
+        { "name": "POST /api/payments/initiate", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/initiate", "host": ["{{baseUrl}}"], "path": ["api","payments","initiate"] }, "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"ORDER_ID\",\n  \"method\": \"visa\"\n}" } } },
+        { "name": "POST /api/payments/send-otp", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/send-otp", "host": ["{{baseUrl}}"], "path": ["api","payments","send-otp"] }, "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"ORDER_ID\",\n  \"method\": \"visa\"\n}" } } },
+        { "name": "POST /api/payments/verify-otp", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/verify-otp", "host": ["{{baseUrl}}"], "path": ["api","payments","verify-otp"] }, "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"ORDER_ID\",\n  \"method\": \"visa\",\n  \"otp\": \"123456\"\n}" } } },
+        { "name": "POST /api/payments/resend-otp", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/resend-otp", "host": ["{{baseUrl}}"], "path": ["api","payments","resend-otp"] }, "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"ORDER_ID\",\n  \"method\": \"visa\"\n}" } } },
+        { "name": "POST /api/payments/visa", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/payments/visa", "host": ["{{baseUrl}}"], "path": ["api","payments","visa"] }, "body": { "mode": "raw", "raw": "{\n  \"orderId\": \"ORDER_ID\",\n  \"cardNumber\": \"4111111111111111\",\n  \"expiryMonth\": \"12\",\n  \"expiryYear\": \"2027\",\n  \"cvv\": \"123\"\n}" } } },
+        { "name": "GET /api/payments", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/payments", "host": ["{{baseUrl}}"], "path": ["api","payments"] }, "description": "List transactions (admin)." } },
+        {
+          "name": "admin",
+          "item": [
+            { "name": "GET /api/admin/payments", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/admin/payments", "host": ["{{baseUrl}}"], "path": ["api","admin","payments"] }, "description": "Admin payments summary." } },
+            { "name": "GET /api/admin/payments/:userId", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/admin/payments/:userId", "host": ["{{baseUrl}}"], "path": ["api","admin","payments",":userId"] }, "description": "Admin: paid orders for a user." } }
+          ]
+        }
+      ]
+    }
+  ]
+}
