@@ -96,8 +96,8 @@ function ensureThemeToggle() {
 const API_BASE =
   window.__API_BASE__ ||
   (location.hostname.includes('azurestaticapps.net')
-    ? 'https://tech-digits-store-backend-ddexche4cnc0drcd.westeurope-01.azurewebsites.net/api' // عنوان الباك الحقيقي على Azure
-    : 'http://localhost:5000/api'); // في حالة التشغيل المحلي
+    ? 'https://tech-digits-store-backend-ddexche4cnc0drcd.westeurope-01.azurewebsites.net/api'
+    : 'http://localhost:5000/api'); 
 
 const API = API_BASE.replace(/\/$/, '');
 
