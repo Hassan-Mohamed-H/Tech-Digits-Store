@@ -299,7 +299,7 @@ function bindFooterModals() {
         const dlg = ui.modal({ title: 'About', body: '<div>We are a full team working for your comfort.</div>', cancelText: 'Close', size: 'sm' });
         styleModal(dlg);
       } else if (href === '#contact') {
-        const dlg = ui.modal({ title: 'Contact', body: '<div><a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">https://www.youtube.com</a></div>', cancelText: 'Close', size: 'sm' });
+        const dlg = ui.modal({ title: 'Contact', body: '<div><a href="https://chat.whatsapp.com/JwewOUdaiOPGdhmP55D0j1?mode=ems_copy_t" target="_blank" rel="noopener noreferrer">https://chat.whatsapp.com/JwewOUdaiOPGdhmP55D0j1?mode=ems_copy_t</a></div>', cancelText: 'Close', size: 'sm' });
         styleModal(dlg);
       }
     });
