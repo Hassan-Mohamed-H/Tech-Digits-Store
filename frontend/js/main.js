@@ -95,7 +95,8 @@ function ensureThemeToggle() {
 // Robust API base: same-origin /api if served by the backend; fallback to localhost:5000/api
 const API_BASE =
   window.__API_BASE__ ||
-  (location.hostname.includes('azurestaticapps.net')
+  (location.hostname.includes('azurestaticapps.net') ||
+   location.hostname.includes('tech-digits-store.kesug.com')
     ? 'https://tech-digits-store-backend-ddexche4cnc0drcd.westeurope-01.azurewebsites.net/api'
     : 'http://localhost:5000/api'); 
 
