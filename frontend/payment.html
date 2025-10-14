@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TechDigits Store | Payment</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .error-message { color: #d00000; font-size: 0.9em; margin-top: 4px; }
+    .invalid { border-color: #d00000 !important; }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -22,17 +26,21 @@
         <div id="visaFields" class="hidden">
           <label>Card Number
             <input type="text" inputmode="numeric" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="23" required />
+            <div class="error-message" id="cardNumberError"></div>
           </label>
           <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px">
             <label>Expiry Month
-              <input type="number" name="expiryMonth" placeholder="MM" min="1" max="12" required />
+              <input type="text" inputmode="numeric" name="expiryMonth" placeholder="MM" maxlength="2" required />
+              <div class="error-message" id="expiryMonthError"></div>
             </label>
             <label>Expiry Year
-              <input type="number" name="expiryYear" placeholder="YY" min="24" max="99" required />
+              <input type="text" inputmode="numeric" name="expiryYear" placeholder="YY" maxlength="2" required />
+              <div class="error-message" id="expiryYearError"></div>
             </label>
           </div>
           <label>CVV
             <input type="password" inputmode="numeric" name="cvv" placeholder="123" minlength="3" maxlength="3" pattern="\\d{3}" required />
+            <div class="error-message" id="cvvError"></div>
           </label>
         </div>
         <div id="vodafoneFields" class="hidden">
@@ -54,6 +62,115 @@
       </div>
     </div>
   </footer>
+  <script>
+    (function() {
+      function digitsOnly(value) { return (value || '').replace(/\D+/g, ''); }
+
+      function setError(inputEl, errorEl, message) {
+        if (!inputEl || !errorEl) return;
+        if (message) {
+          errorEl.textContent = message;
+          inputEl.classList.add('invalid');
+        } else {
+          errorEl.textContent = '';
+          inputEl.classList.remove('invalid');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('paymentForm');
+        if (!form) return;
+
+        var visaSection = document.getElementById('visaFields');
+        var cardInput = form.elements['cardNumber'];
+        var monthInput = form.elements['expiryMonth'];
+        var yearInput = form.elements['expiryYear'];
+        var cvvInput = form.elements['cvv'];
+
+        var cardErr = document.getElementById('cardNumberError');
+        var monthErr = document.getElementById('expiryMonthError');
+        var yearErr = document.getElementById('expiryYearError');
+        var cvvErr = document.getElementById('cvvError');
+
+        if (cardInput) {
+          cardInput.addEventListener('input', function() {
+            var d = digitsOnly(cardInput.value).slice(0, 16);
+            cardInput.value = d; // keep only digits, max 16
+            if (d.length === 16) setError(cardInput, cardErr, '');
+          });
+        }
+
+        if (monthInput) {
+          monthInput.addEventListener('input', function() {
+            var d = digitsOnly(monthInput.value).slice(0, 2);
+            monthInput.value = d;
+            var n = d === '' ? NaN : Number(d);
+            if (d.length === 2 && n >= 1 && n <= 12) setError(monthInput, monthErr, '');
+          });
+        }
+
+        if (yearInput) {
+          yearInput.addEventListener('input', function() {
+            var d = digitsOnly(yearInput.value).slice(0, 2);
+            yearInput.value = d;
+            if (d.length === 2) setError(yearInput, yearErr, '');
+          });
+        }
+
+        if (cvvInput) {
+          cvvInput.addEventListener('input', function() {
+            var d = digitsOnly(cvvInput.value).slice(0, 3);
+            cvvInput.value = d;
+            if (d.length === 3) setError(cvvInput, cvvErr, '');
+          });
+        }
+
+        form.addEventListener('submit', function(e) {
+          var shouldValidateVisa = !visaSection || !visaSection.classList.contains('hidden');
+          var hasError = false;
+
+          if (shouldValidateVisa) {
+            var cardDigits = cardInput ? digitsOnly(cardInput.value) : '';
+            if (!cardInput || cardDigits.length !== 16) {
+              hasError = true;
+              setError(cardInput, cardErr, 'Card number must be exactly 16 digits.');
+            } else {
+              setError(cardInput, cardErr, '');
+            }
+
+            var mVal = monthInput ? digitsOnly(monthInput.value) : '';
+            var mNum = mVal === '' ? NaN : Number(mVal);
+            if (!monthInput || !(mNum >= 1 && mNum <= 12)) {
+              hasError = true;
+              setError(monthInput, monthErr, 'Expiry month must be a number between 1 and 12.');
+            } else {
+              setError(monthInput, monthErr, '');
+            }
+
+            var yVal = yearInput ? digitsOnly(yearInput.value) : '';
+            if (!yearInput || yVal.length !== 2) {
+              hasError = true;
+              setError(yearInput, yearErr, 'Expiry year must have exactly 2 digits.');
+            } else {
+              setError(yearInput, yearErr, '');
+            }
+
+            var cvvVal = cvvInput ? digitsOnly(cvvInput.value) : '';
+            if (!cvvInput || cvvVal.length !== 3) {
+              hasError = true;
+              setError(cvvInput, cvvErr, 'CVV must have exactly 3 digits.');
+            } else {
+              setError(cvvInput, cvvErr, '');
+            }
+          }
+
+          if (hasError) {
+            e.preventDefault();
+          }
+        });
+      });
+    })();
+  </script>
   <script src="js/main.js"></script>
 </body>
 </html>
