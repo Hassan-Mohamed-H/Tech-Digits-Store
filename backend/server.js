@@ -26,8 +26,8 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5000',
-    'https://tech-digits-store-ajcdd4evceh3d9bm.canadacentral-01.azurewebsites.net',
-    'https://delightful-dune-056da9b0f.1.azurestaticapps.net'
+    'https://tech-digits-store-backend-ddexche4cnc0drcd.westeurope-01.azurewebsites.net/',
+    'https://kind-mushroom-0b856701e.1.azurestaticapps.net/'
   ],
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
@@ -47,8 +47,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 // const frontendPath = path.resolve(__dirname, '../frontend');
 // app.use(express.static(frontendPath));
 
@@ -59,23 +58,7 @@ app.use('/api/admin', adminRoutes);
 // app.get('*', (req, res) => {
 //   res.sendFile(path.join(frontendPath, 'index.html'));
 // });
-=======
-=======
->>>>>>> 8b72363b1b3d449bb0a5c6cebe497fbbc0359b87
-const frontendPath = path.resolve(__dirname, '../frontend');
-app.use(express.static(frontendPath));
 
-app.get('/admin/dashboard', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'admin.html'));
-});
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
-});
-<<<<<<< HEAD
->>>>>>> 30e9bc66623856d1315e95d4e8f0f5568fab24a2
-=======
->>>>>>> 8b72363b1b3d449bb0a5c6cebe497fbbc0359b87
 
 
 const start = async () => {
