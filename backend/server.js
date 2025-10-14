@@ -27,7 +27,8 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5000',
     'https://tech-digits-store-backend-ddexche4cnc0drcd.westeurope-01.azurewebsites.net/',
-    'https://kind-mushroom-0b856701e.1.azurestaticapps.net/'
+    'https://kind-mushroom-0b856701e.1.azurestaticapps.net/',
+    'https://www.tech-digits-store.kesug.com'
   ],
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
