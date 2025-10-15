@@ -63,7 +63,14 @@ function ensureThemeToggle() {
           try { card = JSON.parse(sessionStorage.getItem(`visa_card_${orderId}`) || '{}'); } catch(_) {}
           const payload = { orderId, method: 'visa', otp: code, cardNumber: card.cardNumber, expiryMonth: card.expiryMonth, expiryYear: card.expiryYear, cvv: card.cvv };
           await api.post('/payments/verify-otp', payload);
-          cart.clear();
+          // ✅ Modified by Windsurf: Remove only ordered items from cart after checkout
+          try {
+            const ids = JSON.parse(sessionStorage.getItem(`order_products_${orderId}`) || '[]');
+            if (Array.isArray(ids) && ids.length) {
+              const remaining = cart.read().filter(it => !ids.some(id => String(id) === String(it.id)));
+              cart.write(remaining);
+            }
+          } catch(_) {}
           document.body.classList.add('page-leave');
           setTimeout(()=> { location.href = 'payment-success.html'; }, 200);
         } catch (err) {
@@ -1315,6 +1322,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           const btn = paymentForm.querySelector('button[type=submit]');
           ui.setLoading(btn, true);
+
+          // ✅ Modified by Windsurf: Remove only purchased items after Visa/Vodafone Cash payment
+          // Do NOT overwrite the ordered product IDs here. They were saved at checkout time based on the exact scope (single item or full cart).
+          // If not present for some reason, we will proceed without altering it to avoid accidentally clearing non-purchased items.
+          (function ensureNoOverwriteOrderedIds(){
+            try {
+              const key = `order_products_${orderId}`;
+              const existing = sessionStorage.getItem(key);
+              if (!existing) {
+                // Intentionally do nothing. Avoid defaulting to all cart items which could clear unrelated items.
+              }
+            } catch(_) {}
+          })();
+
           // Request an email OTP for Visa
           await api.post('/payments/send-otp', { orderId, method: 'visa' });
           // Persist card details temporarily for OTP verification step
@@ -1410,7 +1431,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const vodafoneNumber = sessionStorage.getItem(`vf_number_${orderId}`) || '';
         const payload = { orderId, otpCode: code, method: 'vodafone', vodafoneNumber };
         await api.post('/payments/verify-otp', payload);
-        cart.clear();
+        // ✅ Modified by Windsurf: Remove only ordered items from cart after checkout
+        try {
+          const ids = JSON.parse(sessionStorage.getItem(`order_products_${orderId}`) || '[]');
+          if (Array.isArray(ids) && ids.length) {
+            const remaining = cart.read().filter(it => !ids.some(id => String(id) === String(it.id)));
+            cart.write(remaining);
+          }
+        } catch(_) {}
         otpPage.innerHTML = `
           <div class="otp-success" style="text-align:center; padding:20px">
             <div class="checkmark" style="font-size:48px; color:#22c55e">✔</div>
@@ -1718,6 +1746,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const order = await api.post('/orders', { items: scopeItems, method });
         const orderId = order._id || order.id;
         if (!orderId) throw new Error('Order creation failed');
+        // ✅ Modified by Windsurf: Persist ordered product IDs for post-payment cleanup
+        try {
+          const productIds = (scopeItems || []).map(it => it.id);
+          sessionStorage.setItem(`order_products_${orderId}`, JSON.stringify(productIds));
+        } catch(_) {}
         if (method === 'cod') {
           // On COD, clear either the whole cart (full checkout) or just the single item's quantity
           if (mode === 'single' && pId) {
@@ -1729,7 +1762,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               cart.write(current);
             }
           } else {
-            cart.clear();
+            // ✅ Modified by Windsurf: Remove only ordered items from cart after checkout
+            const orderedIds = (scopeItems || []).map(it => String(it.id));
+            const remaining = cart.read().filter(it => !orderedIds.includes(String(it.id)));
+            cart.write(remaining);
           }
           ui.toast('Order confirmed. Pay on delivery');
           setTimeout(()=> location.href = 'profile.html', 600);
@@ -1787,6 +1823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const verifyOtpForm = ui.qs('#verifyOtpForm');
   if (verifyOtpForm) {
     const p = new URLSearchParams(location.search);
+    if ((p.get('method') || '').toLowerCase() === 'visa') return;
     let email = p.get('email') || '';
     const emailInput = verifyOtpForm.querySelector('[name=email]');
     if (emailInput) emailInput.value = email;
@@ -1884,3 +1921,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Rotating hero banner (index.html)
+
