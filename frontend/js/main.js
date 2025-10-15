@@ -1922,3 +1922,112 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Rotating hero banner (index.html)
 
+// ✅ Added by Windsurf: Responsive hamburger menu (small screens, logged-in only);
+(function setupResponsiveHamburger(){
+  try {
+    const BP = 768; // mobile breakpoint
+    let btn, menu, outside;
+    const headerRow = ui && ui.qs && ui.qs('.site-header .hdr');
+    const userWrap = ui && ui.qs && ui.qs('#header-user');
+    if (!headerRow || !userWrap) return;
+
+    function buildMenuContent() {
+      const frag = document.createDocumentFragment();
+      // Collect existing header links/buttons except the username span (.hi)
+      const items = Array.from(userWrap.querySelectorAll('a, button')).filter(el => !el.classList.contains('hi'));
+      if (!items.length) return frag;
+      items.forEach((el) => {
+        if (el.tagName === 'A') {
+          const a = document.createElement('a');
+          a.href = el.getAttribute('href') || '#';
+          a.textContent = el.textContent || '';
+          a.className = 'menu-link';
+          a.addEventListener('click', () => closeMenu());
+          frag.appendChild(a);
+        } else if (el.tagName === 'BUTTON') {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'menu-btn';
+          b.textContent = el.textContent || '';
+          // Special case: logout should call auth.logout
+          if (el.id === 'logoutBtn') {
+            b.addEventListener('click', () => { try { auth.logout(); } catch(_) {} });
+          } else if (typeof el.onclick === 'function') {
+            b.addEventListener('click', () => { try { el.onclick(); } catch(_) {} });
+          }
+          frag.appendChild(b);
+        }
+      });
+      return frag;
+    }
+
+    function openMenu() {
+      if (!menu) return;
+      // Rebuild content on each open to reflect latest header state
+      menu.innerHTML = '';
+      menu.appendChild(buildMenuContent());
+      menu.classList.add('open');
+      document.body.classList.add('menu-open');
+      if (!outside) {
+        outside = (e) => { if (!menu.contains(e.target) && e.target !== btn) closeMenu(); };
+        document.addEventListener('click', outside);
+        document.addEventListener('keydown', escClose, { passive: true });
+      }
+    }
+    function escClose(e){ if (e.key === 'Escape') closeMenu(); }
+    function closeMenu() {
+      if (!menu) return;
+      menu.classList.remove('open');
+      document.body.classList.remove('menu-open');
+      if (outside) {
+        document.removeEventListener('click', outside);
+        document.removeEventListener('keydown', escClose);
+        outside = null;
+      }
+    }
+
+    function ensureControls() {
+      // Only for logged-in users and when viewport < BP
+      const isLoggedIn = !!(auth && auth.token && auth.user);
+      const isMobile = window.innerWidth < BP;
+      if (isLoggedIn && isMobile) {
+        document.body.classList.add('has-hamburger');
+        if (!btn) {
+          btn = document.createElement('button');
+          btn.id = 'hamburgerBtn';
+          btn.className = 'hamburger-btn';
+          btn.type = 'button';
+          btn.setAttribute('aria-label', 'Open menu');
+          btn.textContent = '☰';
+          // Insert before #header-user so the username remains visible and nav is replaced by hamburger
+          headerRow.insertBefore(btn, userWrap);
+          btn.addEventListener('click', () => {
+            if (menu && menu.classList.contains('open')) closeMenu(); else openMenu();
+          });
+        }
+        if (!menu) {
+          menu = document.createElement('div');
+          menu.id = 'mobileMenu';
+          menu.className = 'mobile-menu card';
+          headerRow.appendChild(menu);
+        }
+      } else {
+        document.body.classList.remove('has-hamburger');
+        closeMenu();
+        if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+        if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+        btn = null; menu = null;
+      }
+    }
+
+    // Initial
+    ensureControls();
+    // Update on resize and when header is re-rendered
+    window.addEventListener('resize', () => ensureControls());
+    // Observe header-user for changes (e.g., renderHeader updates after login/logout)
+    try {
+      const mo = new MutationObserver(() => ensureControls());
+      mo.observe(userWrap, { childList: true, subtree: true });
+    } catch(_) {}
+  } catch(_) { /* no-op */ }
+})();

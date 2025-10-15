@@ -973,3 +973,70 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
   .pay-methods { flex-direction: column; }
   .pay-methods label { width: 100%; }
 }
+
+/* // ✅ Added by Windsurf: Responsive hamburger menu (styles) */
+@media (max-width: 768px) {
+  /* Anchor the dropdown under the header row */
+  .site-header .hdr { position: relative; }
+
+  /* Only when JS detected logged-in + mobile */
+  body.has-hamburger #header-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* Keep only username (.hi) visible, hide other header actions */
+  body.has-hamburger #header-user a,
+  body.has-hamburger #header-user button {
+    display: none;
+  }
+  body.has-hamburger #header-user .hi { display: inline; }
+
+  /* Hamburger trigger */
+  body.has-hamburger .hamburger-btn {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,.15);
+    color: var(--text);
+    border-radius: 10px;
+    width: 38px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  body.dark-mode.has-hamburger .hamburger-btn { border-color: rgba(255,255,255,.18); }
+
+  /* Dropdown menu */
+  body.has-hamburger .mobile-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    inset-inline-end: 0;
+    min-width: 220px;
+    display: none;
+    padding: 8px;
+    z-index: 70;
+  }
+  body.has-hamburger .mobile-menu.open { display: block; }
+  body.has-hamburger .mobile-menu .menu-link,
+  body.has-hamburger .mobile-menu .menu-btn {
+    display: block;
+    width: 100%;
+    text-align: start;
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+  }
+  body.dark-mode.has-hamburger .mobile-menu .menu-link,
+  body.dark-mode.has-hamburger .mobile-menu .menu-btn {
+    border-color: rgba(255,255,255,.12);
+  }
+  body.has-hamburger .mobile-menu .menu-link:hover,
+  body.has-hamburger .mobile-menu .menu-btn:hover {
+    background: rgba(0,0,0,.04);
+  }
+}
