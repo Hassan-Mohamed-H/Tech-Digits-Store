@@ -889,12 +889,10 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
     border-color: #b02a37;
 }
 
-/* // ✅ Added by Windsurf: Responsive adjustments for large tablets/desktops */
 @media (max-width: 1200px) {
   .container { max-width: 1000px; }
 }
 
-/* // ✅ Added by Windsurf: Responsive adjustments for tablets */
 @media (max-width: 992px) {
   .container { padding: 16px; }
   .hdr { gap: 8px; }
@@ -907,7 +905,6 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
   .site-footer .container { gap: 10px; flex-wrap: wrap; }
 }
 
-/* // ✅ Added by Windsurf: Responsive adjustments for mobile */
 @media (max-width: 768px) {
   .container { padding: 14px; }
   .hdr { flex-wrap: wrap; gap: 8px; }
@@ -934,7 +931,6 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
   .site-footer .container { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
 
-/* // ✅ Added by Windsurf: Tight mobile adjustments */
 @media (max-width: 576px) {
   .container { padding: 12px; }
   .hdr { gap: 6px; }
@@ -947,13 +943,11 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
   .site-footer .links a { display: inline-block; margin: 4px 6px; }
 }
 
-/* // ✅ Added by Windsurf: Prevent overlap in product detail and cards on tablets */
 @media (max-width: 820px) {
   .product-detail .media img,
   .product-detail .img-placeholder { height: 260px; }
 }
 
-/* // ✅ Added by Windsurf: Strong mobile stacking and sizing safeguards */
 @media (max-width: 480px) {
   /* Product list cards: ensure buttons don't collide */
   .products .product .actions { flex-wrap: wrap; }
@@ -974,7 +968,6 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
   .pay-methods label { width: 100%; }
 }
 
-/* // ✅ Added by Windsurf: Responsive hamburger menu (styles) */
 @media (max-width: 768px) {
   /* Anchor the dropdown under the header row */
   .site-header .hdr { position: relative; }
