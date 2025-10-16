@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechDigits Admin | Dashboard</title>
+  <title>TechDigits Admin | Products</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/png" href="images/favicon.png">
 </head>
@@ -17,25 +17,20 @@
   </header>
 
   <main class="container" id="adminApp">
-    <div class="admin-layout" id="adminNavOnly">
+    <div class="admin-layout">
       <aside class="admin-sidebar card" id="adminSidebar">
         <h3 class="muted" style="margin-top:0">Menu</h3>
         <nav>
-          <a href="admin-dashboard.html" data-section="dashboard" class="active">Dashboard</a>
+          <a href="admin-dashboard.html" data-section="dashboard">Dashboard</a>
           <a href="admin-users.html" data-section="users">Users Management</a>
-          <a href="admin-products.html" data-section="products">Products Management</a>
+          <a href="admin-products.html" data-section="products" class="active">Products Management</a>
           <a href="admin-categories.html" data-section="categories">Categories Management</a>
           <a href="admin-orders.html" data-section="orders">Orders Management</a>
           <a href="admin-reviews.html" data-section="reviews">User Reviews</a>
           <a href="admin-payments.html" data-section="payments">Payments Management</a>
         </nav>
       </aside>
-      <section class="admin-content" id="adminContent">
-        <div class="card">
-          <h2 class="section-title">Admin</h2>
-          <p class="muted">Use the menu to open a management page.</p>
-        </div>
-      </section>
+      <section class="admin-content" id="adminContent"></section>
     </div>
   </main>
 

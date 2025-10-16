@@ -1153,19 +1153,37 @@ if (adminApp) {
       }
     };
 
-    // Sidebar navigation
-    ui.qsa('#adminSidebar a').forEach(a=> a.onclick = (e)=>{ 
-      e.preventDefault(); 
-      const sec = a.dataset.section; 
-      ({dashboard:loadDashboard,users:loadUsers,products:loadProducts,categories:loadCategories,orders:loadOrders,reviews:loadReviews,payments:loadPayments}[sec])(); 
-    });
-    // Default
-    loadDashboard();
+    // Sidebar navigation: intercept only hash links, allow page links to navigate
+    ui.qsa('#adminSidebar a').forEach(a=> a.addEventListener('click', (ev)=>{
+      const href = a.getAttribute('href') || '#';
+      if (href === '#') {
+        ev.preventDefault();
+        const sec = a.dataset.section;
+        const map = {dashboard:loadDashboard,users:loadUsers,products:loadProducts,categories:loadCategories,orders:loadOrders,reviews:loadReviews,payments:loadPayments};
+        map[sec] && map[sec]();
+      }
+    }));
+
+    // Initial section based on current filename
+    const page = (location.pathname.split('/').pop()||'').toLowerCase();
+    const pageToSection = {
+      'admin-dashboard.html': 'dashboard',
+      'admin-users.html': 'users',
+      'admin-products.html': 'products',
+      'admin-categories.html': 'categories',
+      'admin-orders.html': 'orders',
+      'admin-reviews.html': 'reviews',
+      'admin-payments.html': 'payments'
+    };
+    const sec = pageToSection[page] || 'dashboard';
+    const loader = {dashboard:loadDashboard,users:loadUsers,products:loadProducts,categories:loadCategories,orders:loadOrders,reviews:loadReviews,payments:loadPayments}[sec];
+    if (loader) loader();
   })();
 }
 
 // ---------------- Page bootstraps ----------------
 document.addEventListener('DOMContentLoaded', async () => {
+  // ... (rest of the code remains the same)
   // Page enter animation
   document.body.classList.add('page-enter');
   // Intercept internal link navigation for page-leave animation
@@ -2088,4 +2106,71 @@ document.addEventListener('DOMContentLoaded', async () => {
       mo.observe(userWrap, { childList: true, subtree: true });
     } catch(_) {}
   } catch(_) { /* no-op */ }
+})();
+
+// Admin mobile dropdown (≤768px), using the title as the toggle
+(function setupAdminMobileDropdown(){
+  try {
+    const BP = 768;
+    const adminLayout = document.querySelector('.admin-layout');
+    if (!adminLayout) return;
+    const mainWrap = document.querySelector('main.container') || document.body;
+    let header, trigger, menu, outside;
+
+    function build() {
+      if (header) return;
+      try { document.body.classList.add('is-admin'); } catch(_) {}
+      header = document.createElement('div');
+      header.className = 'admin-mobile-header';
+      trigger = document.createElement('div');
+      trigger.className = 'admin-mobile-trigger';
+      trigger.textContent = 'Admin Dashboard';
+      menu = document.createElement('div');
+      menu.className = 'admin-mobile-menu card';
+      menu.innerHTML = [
+        { text: 'Dashboard', href: 'admin-dashboard.html' },
+        { text: 'Users Management', href: 'admin-users.html' },
+        { text: 'Products Management', href: 'admin-products.html' },
+        { text: 'Categories Management', href: 'admin-categories.html' },
+        { text: 'Orders Management', href: 'admin-orders.html' },
+        { text: 'User Reviews', href: 'admin-reviews.html' },
+        { text: 'Payments Management', href: 'admin-payments.html' },
+      ].map(i=>`<a href="${i.href}">${i.text}</a>`).join('');
+      header.appendChild(trigger);
+      header.appendChild(menu);
+      mainWrap.insertBefore(header, mainWrap.firstChild);
+
+      trigger.addEventListener('click', () => {
+        const open = menu.classList.toggle('open');
+        if (open && !outside) {
+          outside = (e) => {
+            if (!header.contains(e.target)) {
+              menu.classList.remove('open');
+              document.removeEventListener('click', outside);
+              outside = null;
+            }
+          };
+          setTimeout(()=> document.addEventListener('click', outside), 0);
+        }
+      });
+      Array.from(menu.querySelectorAll('a')).forEach(a => a.addEventListener('click', () => {
+        menu.classList.remove('open');
+      }));
+    }
+
+    function destroy() {
+      if (outside) { document.removeEventListener('click', outside); outside = null; }
+      if (header && header.parentNode) header.parentNode.removeChild(header);
+      header = null; trigger = null; menu = null;
+      try { document.body.classList.remove('is-admin'); } catch(_) {}
+    }
+
+    function ensure() {
+      const isMobile = window.innerWidth <= BP;
+      if (isMobile) build(); else destroy();
+    }
+
+    ensure();
+    window.addEventListener('resize', ensure);
+  } catch(_) {}
 })();

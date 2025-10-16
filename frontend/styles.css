@@ -1040,3 +1040,61 @@ body.dark-mode #toast { background:#101827; color:#e5e7eb; border-color: rgba(25
     background: rgba(0,0,0,.04);
   }
 }
+
+/* Admin mobile dropdown navigation (≤768px) */
+@media (max-width: 768px) {
+  /* Hide the full admin sidebar/menu on small screens */
+  .admin-layout .admin-sidebar { display: none; }
+  /* Prefer Admin Dashboard text toggle over global hamburger when on admin */
+  body.is-admin .hamburger-btn { display: none !important; }
+
+  /* Mobile admin header injected by JS */
+  .admin-mobile-header {
+    position: relative;
+    margin: 12px 0 8px;
+  }
+  .admin-mobile-header .admin-mobile-trigger {
+    display: block;
+    text-align: center;
+    font-weight: 800;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,.12);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+  body.dark-mode .admin-mobile-header .admin-mobile-trigger {
+    border-color: rgba(255,255,255,.14);
+  }
+  .admin-mobile-header .admin-mobile-trigger:active { transform: translateY(1px); }
+
+  /* Dropdown menu under the header trigger */
+  .admin-mobile-menu {
+    margin-top: 8px;
+    display: none;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: var(--card);
+    box-shadow: 0 10px 20px rgba(0,0,0,.20);
+    z-index: 40;
+  }
+  body.dark-mode .admin-mobile-menu { border-color: rgba(255,255,255,.12); }
+  .admin-mobile-menu.open { display: block; }
+  .admin-mobile-menu a {
+    display: block;
+    width: 100%;
+    text-align: start;
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.08);
+    text-decoration: none;
+    color: var(--text);
+    background: var(--card);
+  }
+  body.dark-mode .admin-mobile-menu a { border-color: rgba(255,255,255,.12); }
+  .admin-mobile-menu a:hover { background: rgba(0,0,0,.04); }
+}

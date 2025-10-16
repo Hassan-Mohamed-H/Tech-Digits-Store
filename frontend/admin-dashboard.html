@@ -17,10 +17,11 @@
   </header>
 
   <main class="container" id="adminApp">
-    <div class="admin-layout" id="adminNavOnly">
+    <div class="admin-layout">
       <aside class="admin-sidebar card" id="adminSidebar">
         <h3 class="muted" style="margin-top:0">Menu</h3>
         <nav>
+          <!-- ✅ Added by Windsurf: Admin menu page links -->
           <a href="admin-dashboard.html" data-section="dashboard" class="active">Dashboard</a>
           <a href="admin-users.html" data-section="users">Users Management</a>
           <a href="admin-products.html" data-section="products">Products Management</a>
@@ -31,10 +32,7 @@
         </nav>
       </aside>
       <section class="admin-content" id="adminContent">
-        <div class="card">
-          <h2 class="section-title">Admin</h2>
-          <p class="muted">Use the menu to open a management page.</p>
-        </div>
+        <!-- ✅ Added by Windsurf: main.js will populate Dashboard here -->
       </section>
     </div>
   </main>
