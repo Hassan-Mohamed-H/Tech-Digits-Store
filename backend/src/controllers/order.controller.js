@@ -52,8 +52,16 @@ const listMyOrders = async (req, res) => {
 };
 
 const listAllOrders = async (req, res) => {
+  // ✅ Added by Windsurf: include customerName in admin orders listing
   const orders = await Order.find().populate('user').populate('items.product');
-  res.json(orders);
+  const data = (orders || []).map(o => {
+    const obj = typeof o.toObject === 'function' ? o.toObject() : o;
+    const u = o.user || {};
+    const name = u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email || '';
+    obj.customerName = name;
+    return obj;
+  });
+  res.json(data);
 };
 
 const getOrder = async (req, res) => {

@@ -16,6 +16,7 @@ const reviewRoutes = require('./src/routes/review.routes');
 const paymentRoutes = require('./src/routes/payment.routes');
 const adminRoutes = require('./src/routes/admin.routes');
 const OtpToken = require('./src/models/OtpToken');
+const cartRoutes = require('./src/routes/cart.routes');
 
 
 
@@ -47,6 +48,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/cart', cartRoutes);
+
 
 
 // const frontendPath = path.resolve(__dirname, '../frontend');

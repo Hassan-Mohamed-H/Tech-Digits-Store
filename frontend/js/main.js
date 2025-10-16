@@ -67,8 +67,9 @@ function ensureThemeToggle() {
           try {
             const ids = JSON.parse(sessionStorage.getItem(`order_products_${orderId}`) || '[]');
             if (Array.isArray(ids) && ids.length) {
-              const remaining = cart.read().filter(it => !ids.some(id => String(id) === String(it.id)));
-              cart.write(remaining);
+              const cur = await cart.read();
+              const remaining = cur.filter(it => !ids.some(id => String(id) === String(it.id)));
+              await cart.write(remaining);
             }
           } catch(_) {}
           document.body.classList.add('page-leave');
@@ -108,7 +109,6 @@ const API_BASE =
 
 const API = API_BASE.replace(/\/$/, '');
 
-
 // ---------------- API ----------------
 const api = {
   async json(path, opts = {}) {
@@ -118,6 +118,13 @@ const api = {
     const res = await fetch(`${API}${path.startsWith('/') ? '' : '/'}${path}`, { ...opts, headers });
     let body = null;
     try { body = await res.json(); } catch(_) {}
+
+    // ✅ Added by Windsurf: Session Expiration Detection and Redirect.
+    // If backend signals unauthorized/forbidden, trigger global handler.
+    if (res && (res.status === 401 || res.status === 403)) {
+      try { if (typeof window !== 'undefined' && typeof window.__handleSessionExpired === 'function') window.__handleSessionExpired('api'); } catch(_) {}
+      throw new Error((body && (body.message || body.error)) || 'Unauthorized');
+    }
 
     if (!res.ok) throw new Error((body && (body.message || body.error)) || 'An error occurred. Please try again.');
     return body;
@@ -598,20 +605,61 @@ const products = {
   }
 };
 
-// ---------------- Cart (localStorage, sync on checkout) ----------------
+// ---------------- Cart (DB for logged-in users, localStorage fallback for guests) ----------------
+// ✅ Added by Windsurf: Moved cart storage from localStorage to backend database.
 const cart = {
   key: 'cart_items',
-  read() { try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(_) { return []; } },
-  write(items) { localStorage.setItem(this.key, JSON.stringify(items)); },
-  add(id, qty=1) {
-    const items = this.read();
-    const i = items.find(x => x.id === id);
-    if (i) i.qty += qty; else items.push({ id, qty });
-    this.write(items);
+  async read() {
+    try {
+      if (auth.token) {
+        const c = await api.get('/cart');
+        const items = (c && c.items) || [];
+        return items.map(it => ({ id: String(it.product?._id || it.product), qty: it.quantity || it.qty || 1, price: it.price }));
+      }
+    } catch (_) {}
+    try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(_) { return []; }
   },
-  remove(id) { this.write(this.read().filter(x => x.id !== id)); },
-  setQty(id, qty) { const items = this.read(); const i = items.find(x=>x.id===id); if (i) i.qty = Math.max(1, qty); this.write(items); },
-  clear() { this.write([]); }
+  async write(items) {
+    if (auth.token) {
+      try {
+        await api.post('/cart', { items: (items||[]).map(it => ({ id: it.id, qty: it.qty })) });
+        return;
+      } catch(_) {}
+    }
+    localStorage.setItem(this.key, JSON.stringify(items||[]));
+  },
+  async add(id, qty=1) {
+    if (auth.token) {
+      try { await api.post('/cart', { id, qty }); return; } catch(_) {}
+    }
+    const items = await this.read();
+    const i = items.find(x => String(x.id) === String(id));
+    if (i) i.qty += qty; else items.push({ id, qty });
+    await this.write(items);
+  },
+  async remove(id) {
+    if (auth.token) {
+      try { await api.delete(`/cart/${encodeURIComponent(id)}`); return; } catch(_) {}
+    }
+    const items = await this.read();
+    await this.write(items.filter(x => String(x.id) !== String(id)));
+  },
+  async setQty(id, qty) {
+    const q = Math.max(1, Number(qty)||1);
+    if (auth.token) {
+      try { await api.put(`/cart/${encodeURIComponent(id)}`, { qty: q }); return; } catch(_) {}
+    }
+    const items = await this.read();
+    const i = items.find(x=> String(x.id)===String(id));
+    if (i) i.qty = q;
+    await this.write(items);
+  },
+  async clear() {
+    if (auth.token) {
+      try { await api.post('/cart', { items: [] }); return; } catch(_) {}
+    }
+    await this.write([]);
+  }
 };
 
 // ---------------- Swipe helper for mobile ----------------
@@ -855,8 +903,8 @@ if (adminApp) {
           if (test) return; // non-destructive during verification
           await api.put(`/orders/${orderId}/status`, { status });
           ui.toast('Order status updated');
-          if (rowEl && rowEl.children && rowEl.children[2]) {
-            rowEl.children[2].textContent = status;
+          if (rowEl && rowEl.children && rowEl.children[3]) {
+            rowEl.children[3].textContent = status;
           }
         }
       });
@@ -906,8 +954,12 @@ if (adminApp) {
       const rows = (list||[]).map(o=>{
         const names = (o.items||[]).map(it=> it.product?.name).filter(Boolean);
         const label = names.length ? names.join(', ') : (o._id||o.id);
+        // ✅ Added by Windsurf: Customer Name column in Orders Management.
+        const u = o.user || {};
+        const customerName = o.customerName || u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email || '';
         return `<tr>
           <td>${label}</td>
+          <td>${(customerName||'').replace(/</g,'&lt;')}</td>
           <td>${ui.currency(o.totalAmount||o.total||o.amount||0)}</td>
           <td>${o.status||'Pending'}</td>
           <td>${new Date(o.createdAt||Date.now()).toLocaleString('en-EG')}</td>
@@ -915,7 +967,8 @@ if (adminApp) {
           <td><button class=\"btn danger\" data-act=\"del-order\" data-id=\"${o._id||o.id}\">Delete</button></td>
         </tr>`;
       });
-      content.innerHTML = renderTable(['Order','Total','Status','Date','Actions','Delete'], rows) + `
+      // ✅ Added by Windsurf: Customer Name column header in Orders Management.
+      content.innerHTML = renderTable(['Order','Customer Name','Total','Status','Date','Actions','Delete'], rows) + `
         <div class="admin-actions" style="margin-top:12px;display:flex;justify-content:flex-end">
           <button class="btn delete-all" id="deleteAllOrdersBtn">Delete All Orders</button>
         </div>
@@ -1435,8 +1488,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           const ids = JSON.parse(sessionStorage.getItem(`order_products_${orderId}`) || '[]');
           if (Array.isArray(ids) && ids.length) {
-            const remaining = cart.read().filter(it => !ids.some(id => String(id) === String(it.id)));
-            cart.write(remaining);
+            const cur = await cart.read();
+            const remaining = cur.filter(it => !ids.some(id => String(id) === String(it.id)));
+            await cart.write(remaining);
           }
         } catch(_) {}
         otpPage.innerHTML = `
@@ -1646,7 +1700,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch(_) { ordersList.innerHTML = '<li class="muted">Could not load your orders</li>'; }
       }
       if (profileCart) {
-        const items = cart.read();
+        const items = await cart.read();
         if (!items.length) { profileCart.innerHTML = '<li class="muted">Your cart is empty</li>'; }
         else {
           const details = await Promise.all(items.map(async it => { try { const p = await api.get(`/products/${it.id}`); return { ...it, product: p }; } catch(_) { return { ...it, product: { name: 'Product', price: 0, images: [] } }; } }));
@@ -1662,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (cartBox) {
     if (!auth.requireLogin('cart.html')) return;
     const renderCart = async () => {
-      const items = cart.read();
+      const items = await cart.read();
       const details = await Promise.all(items.map(async it => {
         try { const p = await api.get(`/products/${it.id}`); return { ...it, product: p }; } catch(_) { return { ...it, product: { name: 'Product', price: 0 } }; }
       }));
@@ -1700,9 +1754,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       cartBox.querySelectorAll('.cart-item').forEach(row => {
         const id = row.dataset.id;
         const input = row.querySelector('input');
-        row.querySelector('.minus').onclick = ()=> { cart.setQty(id, Math.max(1,(+input.value||1)-1)); renderCart(); };
-        row.querySelector('.plus').onclick = ()=> { cart.setQty(id, (+input.value||1)+1); renderCart(); };
-        row.querySelector('.remove').onclick = ()=> { row.classList.add('gone'); setTimeout(()=>{ cart.remove(id); renderCart(); }, 200); };
+        row.querySelector('.minus').onclick = async ()=> { await cart.setQty(id, Math.max(1,(+input.value||1)-1)); renderCart(); };
+        row.querySelector('.plus').onclick = async ()=> { await cart.setQty(id, (+input.value||1)+1); renderCart(); };
+        row.querySelector('.remove').onclick = ()=> { row.classList.add('gone'); setTimeout(async ()=>{ await cart.remove(id); renderCart(); }, 200); };
         const perCheckout = row.querySelector('.item-checkout');
         if (perCheckout) {
           perCheckout.onclick = ()=> {
@@ -1732,7 +1786,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // For full-cart checkout (default), use the full cart contents
 
     // Build summary
-    const baseItems = (mode === 'single' && pId) ? [{ id: pId, qty: pQty }] : cart.read();
+    const baseItems = (mode === 'single' && pId) ? [{ id: pId, qty: pQty }] : await cart.read();
+
     const details = await Promise.all(baseItems.map(async it => { try { const p = await api.get(`/products/${it.id}`); return { ...it, product: p }; } catch(_) { return { ...it, product: { name: 'Product', price: 0 } }; } }));
     const total = details.reduce((s,d)=> s + (d.product.price||0)*d.qty, 0);
     orderSummary.innerHTML = details.map(d => `<li class="card"><span>${d.product.name}</span><span>x${d.qty}</span><span>${ui.currency(d.product.price*d.qty)}</span></li>`).join('') + `<li class="total">Total: <strong>${ui.currency(total)}</strong></li>`;
@@ -1742,7 +1797,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const method = checkoutForm.querySelector('input[name=payMethod]:checked')?.value || 'cod';
       try {
         // Submit only the selected scope of items
-        const scopeItems = (mode === 'single' && pId) ? [{ id: pId, qty: pQty }] : cart.read();
+        const scopeItems = (mode === 'single' && pId) ? [{ id: pId, qty: pQty }] : await cart.read();
+
         const order = await api.post('/orders', { items: scopeItems, method });
         const orderId = order._id || order.id;
         if (!orderId) throw new Error('Order creation failed');
@@ -1754,19 +1810,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (method === 'cod') {
           // On COD, clear either the whole cart (full checkout) or just the single item's quantity
           if (mode === 'single' && pId) {
-            const current = cart.read();
+            const current = await cart.read();
             const idx = current.findIndex(it => String(it.id) === String(pId));
             if (idx >= 0) {
               current[idx].qty = Math.max(0, (current[idx].qty||1) - pQty);
               if (current[idx].qty <= 0) current.splice(idx,1);
-              cart.write(current);
+              await cart.write(current);
             }
           } else {
             // ✅ Modified by Windsurf: Remove only ordered items from cart after checkout
             const orderedIds = (scopeItems || []).map(it => String(it.id));
-            const remaining = cart.read().filter(it => !orderedIds.includes(String(it.id)));
-            cart.write(remaining);
+            const cur = await cart.read();
+            const remaining = cur.filter(it => !orderedIds.includes(String(it.id)));
+            await cart.write(remaining);
           }
+
           ui.toast('Order confirmed. Pay on delivery');
           setTimeout(()=> location.href = 'profile.html', 600);
         } else {
