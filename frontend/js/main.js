@@ -119,6 +119,7 @@ const api = {
     let body = null;
     try { body = await res.json(); } catch(_) {}
 
+    // ✅ Added by Windsurf: Session Expiration Detection and Redirect.
     // If backend signals unauthorized/forbidden, trigger global handler.
     if (res && (res.status === 401 || res.status === 403)) {
       try { if (typeof window !== 'undefined' && typeof window.__handleSessionExpired === 'function') window.__handleSessionExpired('api'); } catch(_) {}
@@ -605,6 +606,7 @@ const products = {
 };
 
 // ---------------- Cart (DB for logged-in users, localStorage fallback for guests) ----------------
+// ✅ Added by Windsurf: Moved cart storage from localStorage to backend database.
 const cart = {
   key: 'cart_items',
   async read() {
@@ -952,6 +954,7 @@ if (adminApp) {
       const rows = (list||[]).map(o=>{
         const names = (o.items||[]).map(it=> it.product?.name).filter(Boolean);
         const label = names.length ? names.join(', ') : (o._id||o.id);
+        // ✅ Added by Windsurf: Customer Name column in Orders Management.
         const u = o.user || {};
         const customerName = o.customerName || u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email || '';
         return `<tr>
@@ -964,6 +967,7 @@ if (adminApp) {
           <td><button class=\"btn danger\" data-act=\"del-order\" data-id=\"${o._id||o.id}\">Delete</button></td>
         </tr>`;
       });
+      // ✅ Added by Windsurf: Customer Name column header in Orders Management.
       content.innerHTML = renderTable(['Order','Customer Name','Total','Status','Date','Actions','Delete'], rows) + `
         <div class="admin-actions" style="margin-top:12px;display:flex;justify-content:flex-end">
           <button class="btn delete-all" id="deleteAllOrdersBtn">Delete All Orders</button>
@@ -1100,7 +1104,16 @@ if (adminApp) {
               ['Product Name','Amount','Status','Date'],
               rows.length ? rows : [`<tr><td colspan="4" class="muted">No paid orders</td></tr>`]
             );
-            ui.modal({ title: 'User Payment Details', body, submitText: null, cancelText: 'Close' });
+            // Wrap details content inside a scrollable container and open modal
+            const wrap = document.createElement('div');
+            wrap.className = 'details-container';
+            wrap.appendChild(body);
+            const dlg = ui.modal({ title: 'User Payment Details', body: wrap, submitText: null, cancelText: 'Close' });
+            // Lock background scroll while modal is open, restore on close
+            const prevOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            const origClose = dlg.close;
+            dlg.close = () => { try { document.body.style.overflow = prevOverflow || ''; } catch(_) {} origClose(); };
           } catch (e) {
             ui.toast(e.message || 'Failed to load details', 'error');
           }
@@ -1994,6 +2007,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Rotating hero banner (index.html)
 
+// ✅ Added by Windsurf: Responsive hamburger menu (small screens, logged-in only);
 (function setupResponsiveHamburger(){
   try {
     const BP = 768; // mobile breakpoint
